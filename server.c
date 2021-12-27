@@ -1,94 +1,119 @@
+#include <iostream>
+#include <string>
 #include <cstdio>
-#include <netdb.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <cstdlib>
 #include <cstring>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-#define MAX 80
-#define PORT 8080
-#define SA struct sockaddr
 
-// Function designed for chat between client and server.
-void func(int connfd)
-{
-    char buff[MAX];
-    int n;
-    // infinite loop for chat
-    for (;;) {
-        bzero(buff, MAX);
-        // read the message from client and copy it in buffer
-        read(connfd, buff, sizeof(buff));
-        // print buffer which contains the client contents
-        printf("From client: %s\t To client : ", buff);
-        bzero(buff, MAX);
-        n = 0;
-        // copy server message in the buffer
-        while ((buff[n++] = getchar()) != '\n')
-            ;
+using namespace std;
 
-        // and send that buffer to client
-        write(connfd, buff, sizeof(buff));
+#define BUFFLEN 1024
 
-        // if msg contains "Exit" then server exit and chat ended.
-        if (strncmp("exit", buff, 4) == 0) {
-            printf("Server Exit...\n");
+int main(int argc, char *argv[]){
+
+    //for the server, we only need to specify a port number
+    if(argc != 2)
+    {
+        cerr << "[-]Invalid usage. Provide a port.\n" << endl;
+        exit(0);
+    }
+    //grab the port number
+    int PORT = atoi(argv[1]);
+
+    /*
+     * 1. create socket
+     * 2. bind
+     * 3. listen for connections
+     * 4. accept connection
+     * 5. recive information
+     * 6. send information
+     * 7. goto 5 until stop command
+     */
+
+    /// Creating socket ///
+
+    int host_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if(host_socket < 0){
+        perror("[-]Could not create host socket.\n");
+        return 1;
+    }else cout<<"[+]Host socket created successfully.\n";
+
+    /// Bind to port ///
+
+    struct sockaddr_in address{};
+    memset(&address, 0 ,sizeof (address));
+    address.sin_family = AF_INET;
+    address.sin_port = htons(PORT);
+    address.sin_addr.s_addr = htonl(INADDR_ANY);
+
+
+    if(bind(host_socket, (struct sockaddr *)&address, sizeof(address)) < 0 ){
+        perror("[-]Could not bind.\n");
+        return 1;
+    }else cout<<"[+]Binded successfully.\n";
+
+    /// Listening for connections ///
+
+    if(listen(host_socket,1)){
+        perror("[-]Could not listen.\n");
+        return 1;
+    }else cout<<"[+]Waiting for connection.\n";
+
+    /// Accepting connections ///
+
+    struct sockaddr_in client_address{};
+    memset(&client_address, 0 ,sizeof (address));
+    socklen_t client_address_length = sizeof(address);
+
+    int client_socket = accept(host_socket,(struct sockaddr *)&client_address , &client_address_length);
+    int client_port = ntohs(client_address.sin_port);
+    string client_ip = inet_ntoa(client_address.sin_addr);
+    cout<<"[+]Accepted client with ip : "<<client_ip<<" and with port : "<<client_port<<" .\n";
+
+    /// Communication with client ///
+
+    char buffer[BUFFLEN];
+
+    for(;;){
+        memset(buffer, 0 , BUFFLEN);
+        /// reciving
+        int bytes_recived = recv(client_socket, buffer , BUFFLEN - 1, 0);
+
+        if(bytes_recived < 0){
+            perror("[-]Could not recive.\n");
+            return 1;
+        }
+        if(bytes_recived == 0){
+            cout<<"[*]Client with ip : "<<client_ip<<" and with port : "<<client_port<<" has disconnected.\n";
             break;
         }
+        if(buffer[bytes_recived-1]=='\n')buffer[bytes_recived-1]=0;
+        if(strcmp(":exit",buffer)==0){
+            cout<<"[+]Shutting down request accepted.\n";
+
+            string response = ":exit";
+            int bytes_sent = send(client_socket,response.c_str(), response.length(),0);
+            if(bytes_sent < 0) {
+                perror("[-]Could not send shutting down message.\n");
+            }
+
+            break;
+        }
+        cout<<"[+]Client message : \""<<buffer<<"\"\n";
+        /// sending
+
+        string response = "Hello client at " + client_ip + ":" + to_string(client_port) + ". Your message was : \'"+string(buffer)+"\"";
+
+        int bytes_sent = send(client_socket,response.c_str(), response.length(),0);
+        if(bytes_sent < 0){
+            perror("[-]Could not send message.\n");
+            return 1;
+        }
     }
-}
 
-// Driver function
-int main()
-{
-    int sockfd, connfd;
-    struct sockaddr_in servaddr, cli;
-
-    // socket create and verification
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd == -1) {
-        printf("socket creation failed...\n");
-        exit(0);
-    }
-    else
-        printf("Socket successfully created..\n");
-    bzero(&servaddr, sizeof(servaddr));
-
-    // assign IP, PORT
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(PORT);
-
-    // Binding newly created socket to given IP and verification
-    if ((bind(sockfd, (SA*)&servaddr, sizeof(servaddr))) != 0) {
-        printf("socket bind failed...\n");
-        exit(0);
-    }
-    else
-        printf("Socket successfully binded..\n");
-
-    // Now server is ready to listen and verification
-    if ((listen(sockfd, 5)) != 0) {
-        printf("Listen failed...\n");
-        exit(0);
-    }
-    else
-        printf("Server listening..\n");
-    auto len = sizeof(cli);
-
-    // Accept the data packet from client and verification
-    connfd = accept(sockfd, (SA*)&cli, (socklen_t*)&len);
-    if (connfd < 0) {
-        printf("server accept failed...\n");
-        exit(0);
-    }
-    else
-        printf("server accept the client...\n");
-
-    // Function for chatting between client and server
-    func(connfd);
-
-    // After chatting close the socket
-    close(sockfd);
+    cout<<"[+]Shutting down host socket.\n";
+    shutdown(client_socket,SHUT_RDWR);
+    return 0;
 }
