@@ -1,7 +1,6 @@
 #include "TCP_Client.h"
 
 TCP_client::TCP_client() {
-    error = false;
     isConn = false;
 
     server_ip = "192.168.100.14";
@@ -46,11 +45,21 @@ void TCP_client::send_board(std::vector<std::vector<int>> matrix){
 }
 
 void TCP_client::send_exit() {
-    bool exit = true;
+    int exit = 0;
     int bytes_sent = send(client_socket,&exit, sizeof(exit),0);
     if(bytes_sent < 0){
         perror("[-]Could not send!\n");
     }
+    isConn = false;
+}
+
+void TCP_client::send_end() {
+    int exit = 3;
+    int bytes_sent = send(client_socket,&exit, sizeof(exit),0);
+    if(bytes_sent < 0){
+        perror("[-]Could not send!\n");
+    }
+    isConn = false;
 }
 
 void TCP_client::retrive_package(package* info) {

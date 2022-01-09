@@ -41,11 +41,13 @@ private:
     popup* waitConn;
     popup* gameWin;
     popup* gameLose;
+    popup* disconn;
     int choice;
     sf::Font mFont;
-    int gameState;/// -1 - conn, 0 - null, 1 - win, 2 - lose
+    int gameState;/// -1 - conn, 0 - null, 1 - win, 2 - lose, 3 - disconn
 public:
     interface();
+    int getState();
     void draw(sf::RenderWindow *window);
     void setState(int state);
     int checkE_N(position mousePosition);///Check exit or new game choice

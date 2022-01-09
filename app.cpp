@@ -6,6 +6,10 @@ app::app(){
     mClient = new TCP_client;
     mGame = new game;
 
+    init();
+}
+
+void app::init() {
     window->clear(sf::Color(0x261C2Cff)); ///Clear old frame
     mGame->draw(window);
     window->display();
@@ -47,10 +51,21 @@ void app::pollEvent() {
 
     sf::Event event;
     package info;
-    if(!mClient->getTurn()){
+    if(mGame->getState() and mClient->getConn()){
+        mClient->send_end();
+    }
+    if(!mClient->getTurn() and mClient->getConn() and !mGame->getState()){
         mClient->retrive_package(&info);
         if(info.type==2)mGame->setTableMatrix(info.data);
-        else if(info.type == 0)exit(window);
+        else if(info.type == 0)
+        {
+            //mGame = new game;
+            //mClient = new TCP_client;
+            //init();
+            //return;
+
+            mGame->disconn();
+        }
     }
     ///Event polling
     while (window->pollEvent(event))
@@ -65,17 +80,17 @@ void app::pollEvent() {
             }
         }else if(event.type == sf::Event::MouseButtonPressed) {
             if (event.mouseButton.button == sf::Mouse::Left) {
-                if(mClient->getTurn()) {
-                    int choice = mGame->doAction(mousePosition);
-                    if (choice == 0 and mGame->getMoveFinish()) {
-                        mClient->send_board(mGame->getTableMatrix());
-                    } else if (choice == 1) {
-                        event.type = sf::Event::Closed;
-                        mClient->send_exit();
-                    } else if (choice == 2) {
-                        mGame = new game;
-                        mClient = new TCP_client;
-                    }
+                int choice = mGame->doAction(mousePosition);
+
+                if(mClient->getTurn() and mClient->getConn()  and choice == 0 and mGame->getMoveFinish()) {
+                    mClient->send_board(mGame->getTableMatrix());
+                }
+                if (choice == 1) {
+                    event.type = sf::Event::Closed;
+                }else if (choice == 2) {
+                    mGame = new game;
+                    mClient = new TCP_client;
+                    init();
                 }
             }
         }
@@ -95,12 +110,11 @@ void app::render()
         ///draw here
         mGame->draw(window);
         window->display();///Tell the App that the window is done drawing
-
         pollEvent();
     }
 }
 
 void app::exit(sf::RenderWindow *window) {
-    mClient->send_exit();
+    if(mClient->getConn())mClient->send_exit();
     window->close();
 }

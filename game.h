@@ -42,7 +42,7 @@ public:
     bool getTeam();
     void connSucces();
     bool getMoveFinish();
-    void setMoveFinish(bool x);
+    void disconn();
 };
 
 #endif //SFMLAPP_GAME_H

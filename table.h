@@ -2,7 +2,7 @@
 #define SFMLAPP_TABLE_H
 #define WINDOW_X 996
 #define WINDOW_Y 1000
-#define PATH_R "../Resources/PNGs/no_shadow/1x/"
+#define PATH_R "../Resources/PNGs/"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 

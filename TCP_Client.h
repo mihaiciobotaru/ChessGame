@@ -33,6 +33,7 @@ public:
 
     void send_board(std::vector<std::vector<int>> matrix);
     void send_exit();
+    void send_end();
     void retrive_package(package* info);
     bool getTurn();
     bool getConn();

@@ -7,6 +7,8 @@ private:
     sf::RenderWindow* window;
     game* mGame;
     TCP_client* mClient;
+
+    void init();
 public:
     app();
     void render();

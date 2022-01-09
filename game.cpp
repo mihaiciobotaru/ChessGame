@@ -37,7 +37,7 @@ void pieceInfo::highlightPiece(sf::RenderWindow *window,sf::Vector2f size) {
     sf::RectangleShape box;
     box.setSize(size);
     box.setFillColor(sf::Color::Transparent);
-    box.setOutlineColor(sf::Color::Red);
+    box.setOutlineColor(sf::Color::Blue);
     box.setOutlineThickness(-2);
     box.setPosition((WINDOW_Y - 8 * size.y * 1.004) / 2 + size.x * index.first * (1.004),
                     (WINDOW_Y - 8 * size.y * 1.004) / 2 + size.y * index.second * (1.004));
@@ -59,7 +59,7 @@ void game::highlightAttack(sf::RenderWindow *window,std::pair<int, int> index) {
     sf::RectangleShape box;
     box.setSize(mTable.getSquareSize());
     box.setFillColor(sf::Color::Transparent);
-    box.setOutlineColor(sf::Color::Blue);
+    box.setOutlineColor(sf::Color::Red);
     box.setOutlineThickness(-2);
     box.setPosition((WINDOW_Y - 8 * mTable.getSquareSize().y * 1.004) / 2 + mTable.getSquareSize().x * index.first * (1.004),
                     (WINDOW_Y - 8 * mTable.getSquareSize().y * 1.004) / 2 + mTable.getSquareSize().y * index.second * (1.004));
@@ -339,11 +339,12 @@ int game::doAction(position mousePosition) {
                 }
                 piece_selected = {-1,0,{-1,-1}};
             }
-        }else piece_selected.index.first = -1;
+        }else piece_selected = {-1,0,{-1,-1}};
         if(checkState()==1)mInterface.setState(1);
         if(checkState()==-1)mInterface.setState(2);
         return 0;
     }else {
+        piece_selected = {-1,0,{-1,-1}};
         return mInterface.checkE_N(mousePosition);
     }
 }
@@ -359,13 +360,17 @@ void game::draw(sf::RenderWindow *window) {
     mTable.draw(window);
     if(piece_selected.index.first!=-1)
     {
-        piece_selected.highlightPiece(window,mTable.getSquareSize());
+        piece_selected.highlightPiece(window, mTable.getSquareSize());
         highlightMoves(window);
     }
     mInterface.draw(window);
 }
 
 int game::checkState() {
+    if(mInterface.getState() == 3){
+        playing == false;
+        return 2;
+    }
     int enemyK=-6,allyK=6;
     bool found_enemyK=false,found_allyK=false;
     if(team) {
@@ -383,10 +388,6 @@ int game::checkState() {
     if(found_allyK) return 1;
     return -1;
 
-}
-
-int game::getState() {
-    return checkState();
 }
 
 std::vector<std::vector<int>> game::getTableMatrix() {
@@ -411,8 +412,18 @@ void game::connSucces() {
     mTable.drawPiecesSet();
 }
 
-bool game::getMoveFinish() {
+bool game::getMoveFinish(){
     return move_finished;
 }
 
+int game::getState() {
+    int temp = checkState();
+    if(temp == 1)mInterface.setState(1);
+    if(temp == -1)mInterface.setState(2);
+    return temp;
+}
 
+void game::disconn() {
+    playing = false;
+    mInterface.setState(3);
+}

@@ -91,6 +91,8 @@ interface::interface() {
     text.setString("Lost!");
     gameLose = new popup(text);
 
+    text.setString("Disconnected!");
+    disconn = new popup(text);
 
 }
 
@@ -98,6 +100,7 @@ void interface::draw(sf::RenderWindow *window) {
     if(gameState==-1)waitConn->draw(window);
     else if(gameState==1)gameWin->draw(window);
     else if(gameState==2)gameLose->draw(window);
+    else if(gameState==3)disconn->draw(window);
 }
 
 void interface::setState(int state) {
@@ -105,7 +108,11 @@ void interface::setState(int state) {
 }
 
 int interface::checkE_N(position mousePosition) {
-    if(gameWin->buttonNewPressed(mousePosition) || gameLose->buttonNewPressed(mousePosition))return 2;
-    if(gameWin->buttonExitPressed(mousePosition) || gameLose->buttonExitPressed(mousePosition))return 1;
+    if(gameWin->buttonNewPressed(mousePosition) || gameLose->buttonNewPressed(mousePosition) || disconn->buttonNewPressed(mousePosition))return 2;
+    if(gameWin->buttonExitPressed(mousePosition) || gameLose->buttonExitPressed(mousePosition) || disconn->buttonExitPressed(mousePosition))return 1;
     return 0;
+}
+
+int interface::getState() {
+    return gameState;
 }
