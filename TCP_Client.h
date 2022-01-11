@@ -11,6 +11,11 @@
 #include <cstring>
 #include <vector>
 
+#include <netdb.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+
 #define BUFFLEN 1024
 
 struct package{
@@ -33,7 +38,6 @@ public:
 
     void send_board(std::vector<std::vector<int>> matrix);
     void send_exit();
-    void send_end();
     void retrive_package(package* info);
     bool getTurn();
     bool getConn();

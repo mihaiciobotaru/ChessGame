@@ -3,7 +3,7 @@
  * king 6, queen 5, rook 4, knight 3, bishop 2, pawn 1, null 0
  * - white, + black
  */
-table::table(bool team) {
+table::table() {
     tableMatrix = {
             {4,3,2,5,6,2,3,4},
             {1,1,1,1,1,1,1,1},

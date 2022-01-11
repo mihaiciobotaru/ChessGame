@@ -1,6 +1,6 @@
 #include "game.h"
 
-game::game(): mTable(team) {
+game::game(): mTable() {
     piece_selected = {-1,0,{-1,-1}};
     playing = false;
 }

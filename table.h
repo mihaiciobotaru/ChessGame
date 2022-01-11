@@ -1,7 +1,7 @@
 #ifndef SFMLAPP_TABLE_H
 #define SFMLAPP_TABLE_H
 #define WINDOW_X 996
-#define WINDOW_Y 1000
+#define WINDOW_Y 996
 #define PATH_R "../Resources/PNGs/"
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -17,7 +17,7 @@ private:
 
     bool drawPieces;
 public:
-    table(bool team);
+    table();
     void draw(sf::RenderWindow *window);
     std::vector<bool> getTablePackage();
     std::vector<bool> setTablePackage();

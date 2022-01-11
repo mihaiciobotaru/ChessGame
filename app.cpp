@@ -52,18 +52,13 @@ void app::pollEvent() {
     sf::Event event;
     package info;
     if(mGame->getState() and mClient->getConn()){
-        mClient->send_end();
+        mClient->send_exit();
     }
     if(!mClient->getTurn() and mClient->getConn() and !mGame->getState()){
         mClient->retrive_package(&info);
         if(info.type==2)mGame->setTableMatrix(info.data);
         else if(info.type == 0)
         {
-            //mGame = new game;
-            //mClient = new TCP_client;
-            //init();
-            //return;
-
             mGame->disconn();
         }
     }
