@@ -6,7 +6,7 @@ The project aimed to be accomplished is called ”ChessGame”. This
 project consists of the client and server side of a chess game played across different
 systems. The main requirements of this application are creating an attractive
 interface for the user to play and making an efficient protocol to communicate
-with the concurrent server. 
+with the concurrent server. I have learned about C++, SFML and computer networking with the help of this project.
 
 ## Technologies used
 
